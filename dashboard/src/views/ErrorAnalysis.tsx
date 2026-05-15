@@ -17,6 +17,8 @@ import {
   SelectItem,
   SelectItemGroup,
   TextArea,
+  DataTableSkeleton,
+  InlineLoading,
 } from "@carbon/react";
 import { apiFetch, apiUrl } from "../lib/api";
 import {
@@ -245,7 +247,7 @@ export const ErrorAnalysis: React.FC<Props> = ({ benchmarkId, onBack, initialFil
     () => initialFilters?.metric2 ?? "subset_non_empty_execution_accuracy"
   );
   const [disagree, setDisagree] = useState(() => initialFilters?.disagree ?? false);
-  const [loading, setLoading] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedRecordId, setSelectedRecordId] = useState<string | null>(null);
   const [selectedRecordPipeline, setSelectedRecordPipeline] = useState<string | null>(null);
@@ -345,6 +347,7 @@ export const ErrorAnalysis: React.FC<Props> = ({ benchmarkId, onBack, initialFil
     try {
       setLoading(true);
       setError(null);
+      setItems([]);
       const params = new URLSearchParams();
       params.set("page", String(effectivePage));
       params.set("page_size", String(effectivePageSize));
@@ -791,6 +794,16 @@ export const ErrorAnalysis: React.FC<Props> = ({ benchmarkId, onBack, initialFil
           lowContrast
         />
       )}
+      {loading ? (
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem" }}>
+          <InlineLoading
+            description={`Loading error records for ${benchmarkId}…`}
+            status="active"
+          />
+          <DataTableSkeleton role="progressbar" columnCount={6} rowCount={10} />
+        </div>
+      ) : (
+        <>
       <div style={{ maxHeight: "420px", overflow: "auto" }}>
         <DataTable rows={rows} headers={headers} size="sm">
           {({ rows, headers, getHeaderProps }) => (
@@ -844,6 +857,8 @@ export const ErrorAnalysis: React.FC<Props> = ({ benchmarkId, onBack, initialFil
           setPageSize(pageSize);
         }}
       />
+        </>
+      )}
       {selectedRecordId && (
         <>
           <div
